@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Logbook</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="landing-container">
+        <header class="header">
+            <div class="logo">FitnessLogbook</div>
+            <nav class="nav">
+                <a th:href="@{/login}" class="btn btn-outline">Log In</a>
+                <a th:href="@{/register}" class="btn btn-primary">Register</a>
+            </nav>
+        </header>
+        
+        <main class="hero">
+            <div class="hero-content">
+                <h1>Track Your Progress.<br>Achieve Your Goals.</h1>
+                <p>The frictionless way to log your workouts, track your weight, and stay motivated. Built for serious lifters and beginners alike.</p>
+                <div class="hero-actions">
+                    <a th:href="@{/register}" class="btn btn-primary btn-large">Start for Free</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="mockup-card">
+                    <div class="mockup-header">Recent Workout</div>
+                    <div class="mockup-body">
+                        <div class="mockup-row"><span>Bench Press</span> <span>3x10 @ 100kg</span></div>
+                        <div class="mockup-row"><span>Squat</span> <span>3x8 @ 140kg</span></div>
+                        <div class="mockup-row"><span>Deadlift</span> <span>1x5 @ 180kg</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
