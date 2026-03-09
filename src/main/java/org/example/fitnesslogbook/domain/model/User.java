@@ -38,7 +38,12 @@ public class User {
     // Business Logic Methods
 
     public void recordWeight(double weight) {
-        this.measurements.add(WeightMeasurements.of(weight));
+        recordWeight(weight, java.time.LocalDate.now());
+    }
+
+    public void recordWeight(double weight, java.time.LocalDate date) {
+        this.measurements.add(WeightMeasurements.of(weight, date));
+        this.measurements.sort(java.util.Comparator.comparing(WeightMeasurements::getDate));
     }
 
     public void logExerciseSet(String exerciseName, int reps, double weight) {
