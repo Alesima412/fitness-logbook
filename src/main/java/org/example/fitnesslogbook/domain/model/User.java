@@ -6,16 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 public class User {
-    private final String username;
     private final String name;
     private int age;
     private double height;
     private final List<WeightMeasurements> measurements;
     private final Set<Exercise> exercises;
 
-    private User(String username, String name, int age, double height) {
-        this.username = username;
+    private User(String name, int age, double height) {
         this.name = name;
         this.age = age;
         this.height = height;
@@ -23,10 +22,7 @@ public class User {
         this.exercises = new HashSet<>();
     }
 
-    public static User create(String username, String name, int age, double height) {
-        if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be empty");
-        }
+    public static User create(String name, int age, double height) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
@@ -36,7 +32,7 @@ public class User {
         if(height < 0){
             throw new IllegalArgumentException("height can not be negative");
         }
-        return new User(username, name, age, height);
+        return new User(name, age, height);
     }
 
     // Business Logic Methods
@@ -69,10 +65,6 @@ public class User {
     }
 
     // Getters
-
-    public String getUsername() {
-        return username;
-    }
 
     public String getName() {
         return name;

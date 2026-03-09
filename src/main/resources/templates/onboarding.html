@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding - Fitness Logbook</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="landing-container">
+        <header class="header">
+            <div class="logo">FitnessLogbook</div>
+        </header>
+        
+        <main class="onboarding-main">
+            <div class="onboarding-card">
+                <h2>Let's get started</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <form id="onboardingForm" th:action="@{/onboarding}" th:object="${onboardingForm}" method="post">
+                    <!-- Step 1: Name -->
+                    <div class="form-step active" id="step-0">
+                        <h3>What's your name?</h3>
+                        <p>How should we call you?</p>
+                        <div class="form-group">
+                            <input type="text" th:field="*{name}" class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'server-error' : ''" placeholder="e.g. John Doe" required>
+                            <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Age -->
+                    <div class="form-step" id="step-2">
+                        <h3>How old are you?</h3>
+                        <p>Just a quick detail to personalize your experience.</p>
+                        <div class="form-group">
+                            <input type="number" th:field="*{age}" class="form-control" th:classappend="${#fields.hasErrors('age')} ? 'server-error' : ''" placeholder="e.g. 25" min="0" required>
+                            <div th:if="${#fields.hasErrors('age')}" th:errors="*{age}" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Height -->
+                    <div class="form-step" id="step-3">
+                        <h3>What's your height?</h3>
+                        <p>Enter your height in cm.</p>
+                        <div class="form-group">
+                            <input type="number" th:field="*{height}" class="form-control" th:classappend="${#fields.hasErrors('height')} ? 'server-error' : ''" placeholder="e.g. 180" step="0.1" min="0" required>
+                            <div th:if="${#fields.hasErrors('height')}" th:errors="*{height}" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Weight -->
+                    <div class="form-step" id="step-4">
+                        <h3>What's your current weight?</h3>
+                        <p>Enter your current weight in kg.</p>
+                        <div class="form-group">
+                            <input type="number" th:field="*{weight}" class="form-control" th:classappend="${#fields.hasErrors('weight')} ? 'server-error' : ''" placeholder="e.g. 85.5" step="0.1" min="0" required>
+                            <div th:if="${#fields.hasErrors('weight')}" th:errors="*{weight}" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></div>
+                        </div>
+                    </div>
+
+                    <div class="onboarding-navigation">
+                        <button type="button" id="prevBtn" class="btn btn-outline" onclick="nextPrev(-1)">&#8592; Back</button>
+                        <button type="button" id="nextBtn" class="btn btn-primary" onclick="nextPrev(1)">Next &#8594;</button>
+                        <button type="submit" id="finishBtn" class="btn btn-primary" style="display: none;">Finish</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentTab = 0;
+
+        // Check if there's a server error and start at that tab
+        let errorFields = document.getElementsByClassName("server-error");
+        if(errorFields.length > 0) {
+            let errorStep = errorFields[0].closest('.form-step');
+            let steps = document.getElementsByClassName("form-step");
+            for(let i=0; i<steps.length; i++){
+                if(steps[i] === errorStep){
+                    currentTab = i;
+                    break;
+                }
+            }
+        }
+
+        showTab(currentTab);
+
+        function showTab(n) {
+            let x = document.getElementsByClassName("form-step");
+            for (let i = 0; i < x.length; i++) {
+                x[i].style.display = "none";
+                x[i].classList.remove("active");
+            }
+            x[n].style.display = "block";
+            
+            // Add slight delay for animation
+            setTimeout(() => {
+                x[n].classList.add("active");
+            }, 10);
+
+            // Update Progress Bar
+            let progress = ((n + 1) / x.length) * 100;
+            document.getElementById("progressFill").style.width = progress + "%";
+
+            // Update Buttons
+            if (n == 0) {
+                document.getElementById("prevBtn").style.visibility = "hidden";
+            } else {
+                document.getElementById("prevBtn").style.visibility = "visible";
+            }
+            
+            if (n == (x.length - 1)) {
+                document.getElementById("nextBtn").style.display = "none";
+                document.getElementById("finishBtn").style.display = "inline-flex";
+            } else {
+                document.getElementById("nextBtn").style.display = "inline-flex";
+                document.getElementById("finishBtn").style.display = "none";
+            }
+            
+            // Focus the input of the active tab
+            let inputs = x[n].getElementsByTagName("input");
+            if(inputs.length > 0) {
+                inputs[0].focus();
+            }
+        }
+
+        function nextPrev(n) {
+            let x = document.getElementsByClassName("form-step");
+            
+            // Exit function if any field in current tab is invalid
+            if (n == 1 && !validateForm()) return false;
+            
+            // Hide current tab
+            x[currentTab].style.display = "none";
+            
+            // Increase/Decrease current tab
+            currentTab = currentTab + n;
+            
+            // If you have reached the end of the form, it will be handled by the finish button submitting the form natively
+            // But just in case:
+            if (currentTab >= x.length) {
+                document.getElementById("onboardingForm").submit();
+                return false;
+            }
+            
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            let x, y, i, valid = true;
+            x = document.getElementsByClassName("form-step");
+            y = x[currentTab].getElementsByTagName("input");
+            
+            for (i = 0; i < y.length; i++) {
+                if (y[i].value == "") {
+                    y[i].className += " invalid";
+                    valid = false;
+                } else {
+                    y[i].classList.remove("invalid");
+                }
+            }
+            return valid;
+        }
+
+        // Allow 'Enter' to go to next step
+        document.getElementById("onboardingForm").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                let x = document.getElementsByClassName("form-step");
+                if (currentTab < (x.length - 1)) {
+                    document.getElementById("nextBtn").click();
+                } else {
+                    document.getElementById("finishBtn").click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
