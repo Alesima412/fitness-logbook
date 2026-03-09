@@ -15,15 +15,15 @@ public class HomeController {
 
     @GetMapping("/")
     public String index() {
-        return "index";
+        if (userRepository.existsAnyUser()) {
+            return "redirect:/dashboard";
+        } else {
+            return "index";
+        }
     }
 
     @GetMapping("/start")
     public String start() {
-        if (userRepository.existsAnyUser()) {
-            return "redirect:/dashboard";
-        } else {
             return "redirect:/onboarding";
-        }
     }
 }
