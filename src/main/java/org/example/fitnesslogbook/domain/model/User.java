@@ -10,18 +10,20 @@ public class User {
     private final String username;
     private final String name;
     private int age;
+    private double height;
     private final List<WeightMeasurements> measurements;
     private final Set<Exercise> exercises;
 
-    private User(String username, String name, int age) {
+    private User(String username, String name, int age, double height) {
         this.username = username;
         this.name = name;
         this.age = age;
+        this.height = height;
         this.measurements = new ArrayList<>();
         this.exercises = new HashSet<>();
     }
 
-    public static User create(String username, String name, int age) {
+    public static User create(String username, String name, int age, double height) {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username cannot be empty");
         }
@@ -31,7 +33,10 @@ public class User {
         if (age < 0) {
             throw new IllegalArgumentException("Age cannot be negative");
         }
-        return new User(username, name, age);
+        if(height < 0){
+            throw new IllegalArgumentException("height can not be negative");
+        }
+        return new User(username, name, age, height);
     }
 
     // Business Logic Methods
@@ -83,5 +88,17 @@ public class User {
 
     public Set<Exercise> getExercises() {
         return Collections.unmodifiableSet(exercises);
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public void changeHeight(double newHeight){
+        if(newHeight <= 0 ){
+            throw new IllegalArgumentException("height can not be negative");
+        } else {
+            this.height = newHeight;
+        }
     }
 }
