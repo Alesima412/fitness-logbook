@@ -5,17 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Fitness Logbook</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/theme.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-main {
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .dashboard-header h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 0;
+        }
+        .chart-container {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <div class="landing-container">
         <header class="header">
             <a th:href="@{/}" class="logo" style="text-decoration: none;">FitnessLogbook</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
         </header>
         
-        <main style="padding: 4rem 0; text-align: center;">
-            <h1>Welcome to your Dashboard!</h1>
-            <p style="margin-top: 1rem; color: var(--text-muted);">This is a placeholder for the future dashboard.</p>
+        <main class="dashboard-main">
+            <div class="dashboard-header">
+                <h1>Welcome, <span th:text="${user.name}">User</span>!</h1>
+            </div>
+            
+            <div class="chart-container">
+                <h2 style="margin-bottom: 1rem; text-align: center;">Weight Progress</h2>
+                <canvas id="weightChart"></canvas>
+            </div>
         </main>
     </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const chartLabels = /*[[${chartLabels}]]*/ [];
+        const chartData = /*[[${chartData}]]*/ [];
+        /*]]>*/
+
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Weight (kg)',
+                    data: chartData,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2563eb',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

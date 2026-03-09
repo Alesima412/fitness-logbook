@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onboarding - Fitness Logbook</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/theme.js}"></script>
 </head>
 <body>
     <div class="landing-container">
         <header class="header">
-            <div class="logo">FitnessLogbook</div>
+            <a th:href="@{/}" class="logo" style="text-decoration: none;">FitnessLogbook</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
         </header>
         
         <main class="onboarding-main">
