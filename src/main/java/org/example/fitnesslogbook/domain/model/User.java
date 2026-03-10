@@ -13,6 +13,7 @@ public class User {
     private double height;
     private final List<WeightMeasurements> measurements;
     private final Set<Exercise> exercises;
+    private Exercise pinnedExercise;
 
     private User(String name, int age, double height) {
         this.name = name;
@@ -20,6 +21,7 @@ public class User {
         this.height = height;
         this.measurements = new ArrayList<>();
         this.exercises = new HashSet<>();
+        this.pinnedExercise = null;
     }
 
     public static User create(String name, int age, double height) {
@@ -44,6 +46,34 @@ public class User {
     public void recordWeight(double weight, java.time.LocalDate date) {
         this.measurements.add(WeightMeasurements.of(weight, date));
         this.measurements.sort(java.util.Comparator.comparing(WeightMeasurements::getDate));
+    }
+
+    public void updateWeight(java.util.UUID id, double newWeight, java.time.LocalDate newDate) {
+        for (WeightMeasurements measurement : this.measurements) {
+            if (measurement.getId().equals(id)) {
+                measurement.setWeight(newWeight);
+                measurement.setDate(newDate);
+                break;
+            }
+        }
+        this.measurements.sort(java.util.Comparator.comparing(WeightMeasurements::getDate));
+    }
+
+    public void deleteWeight(java.util.UUID id) {
+        this.measurements.removeIf(m -> m.getId().equals(id));
+    }
+
+    public void addExercise(String name) {
+        findOrCreateExercise(name);
+    }
+
+    public Exercise getExercise(String name) {
+        for (Exercise ex : exercises) {
+            if (ex.getName().equalsIgnoreCase(name)) {
+                return ex;
+            }
+        }
+        return null;
     }
 
     public void logExerciseSet(String exerciseName, int reps, double weight) {
@@ -85,6 +115,23 @@ public class User {
 
     public Set<Exercise> getExercises() {
         return Collections.unmodifiableSet(exercises);
+    }
+
+    public Exercise getPinnedExercise() {
+        return pinnedExercise;
+    }
+
+    public void pinExercise(String name) {
+        Exercise ex = getExercise(name);
+        if (ex != null) {
+            this.pinnedExercise = ex;
+        } else {
+            throw new IllegalArgumentException("Exercise not found");
+        }
+    }
+
+    public void unpinExercise() {
+        this.pinnedExercise = null;
     }
 
     public double getHeight() {

@@ -3,6 +3,9 @@ package org.example.fitnesslogbook.web;
 import org.example.fitnesslogbook.application.repository.UserRepository;
 import org.example.fitnesslogbook.domain.model.User;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +17,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/weight")
@@ -23,6 +27,48 @@ public class WeightController {
 
     public WeightController(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @GetMapping("/manage")
+    public String manageWeights(Model model) {
+        Optional<User> userOptional = userRepository.getAppUser();
+        if (userOptional.isEmpty()) {
+            return "redirect:/start";
+        }
+        model.addAttribute("measurements", userOptional.get().getMeasurements());
+        return "manage-weights";
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateWeight(@PathVariable("id") UUID id,
+                               @RequestParam("weight") double weight,
+                               @RequestParam("date") String dateStr,
+                               RedirectAttributes redirectAttributes) {
+        Optional<User> userOptional = userRepository.getAppUser();
+        if (userOptional.isEmpty()) return "redirect:/start";
+        
+        User user = userOptional.get();
+        try {
+            LocalDate date = LocalDate.parse(dateStr);
+            user.updateWeight(id, weight, date);
+            userRepository.save(user);
+            redirectAttributes.addFlashAttribute("success", "Measurement updated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to update measurement.");
+        }
+        return "redirect:/weight/manage";
+    }
+
+    @PostMapping("/delete/{id}")
+    public String deleteWeight(@PathVariable("id") UUID id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOptional = userRepository.getAppUser();
+        if (userOptional.isEmpty()) return "redirect:/start";
+        
+        User user = userOptional.get();
+        user.deleteWeight(id);
+        userRepository.save(user);
+        redirectAttributes.addFlashAttribute("success", "Measurement deleted successfully.");
+        return "redirect:/weight/manage";
     }
 
     @PostMapping("/add")

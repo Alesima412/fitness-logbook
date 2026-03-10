@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${exercise.name} + ' - Fitness Logbook'">Exercise - Fitness Logbook</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/theme.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-main {
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .dashboard-header h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 0;
+        }
+        .dashboard-content {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .chart-container {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            flex: 2;
+            min-width: 0;
+        }
+        .dashboard-actions {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .action-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+            .dashboard-actions {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <header class="header">
+            <a th:href="@{/}" class="logo" style="text-decoration: none;">FitnessLogbook</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="dashboard-header">
+                <h1 th:text="${exercise.name}">Exercise</h1>
+                <div style="display:flex; gap: 1rem;">
+                    <form th:action="@{/user/pin-exercise}" method="post">
+                        <input type="hidden" name="exerciseName" th:value="${exercise.name}">
+                        <button type="submit" class="btn btn-outline">Pin to Dashboard</button>
+                    </form>
+                    <a th:href="@{/dashboard}" class="btn btn-outline">&larr; Back</a>
+                </div>
+            </div>
+
+            <div th:if="${success}" class="alert-success" th:text="${success}" style="background-color: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; border: 1px solid #bbf7d0;"></div>
+            <div th:if="${error}" class="alert-error" th:text="${error}" style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; border: 1px solid #fecaca;"></div>
+
+            <div class="dashboard-content">
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 1rem; text-align: center;">Max Weight Progress</h2>
+                    <canvas id="exerciseChart"></canvas>
+                    
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Sets History</h3>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Reps</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="set : ${exercise.exerciseSets}">
+                                    <td th:text="${set.date}"></td>
+                                    <td th:text="${set.weight}"></td>
+                                    <td th:text="${set.reps}"></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(exercise.exerciseSets)}">
+                                    <td colspan="3" style="text-align: center; color: var(--text-muted);">No sets logged yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dashboard-actions">
+                    <div class="action-card">
+                        <h3 style="margin-bottom: 1rem;">Log New Set</h3>
+                        <form th:action="@{/exercise/{name}/addSet(name=${exercise.name})}" method="post" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label for="weight" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Weight (kg)</label>
+                                <input type="number" id="weight" name="weight" step="0.1" min="0" required class="form-control" placeholder="e.g. 100">
+                            </div>
+                            <div>
+                                <label for="reps" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Reps</label>
+                                <input type="number" id="reps" name="reps" min="1" required class="form-control" placeholder="e.g. 10">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Log Set</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const chartLabels = /*[[${chartLabels}]]*/ [];
+        const chartData = /*[[${chartData}]]*/ [];
+        /*]]>*/
+
+        if (chartLabels.length > 0) {
+            const ctx = document.getElementById('exerciseChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Max Weight (kg)',
+                        data: chartData,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#2563eb',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

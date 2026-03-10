@@ -88,6 +88,9 @@
                 <div class="chart-container">
                     <h2 style="margin-bottom: 1rem; text-align: center;">Weight Progress</h2>
                     <canvas id="weightChart"></canvas>
+                    <div style="text-align: center; margin-top: 1.5rem;">
+                        <a th:href="@{/weight/manage}" class="btn btn-outline">Manage Measurements</a>
+                    </div>
                 </div>
                 
                 <div class="dashboard-actions">
@@ -118,6 +121,43 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Pinned Exercise Section -->
+            <div th:if="${pinnedExerciseName != null}" style="margin-top: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Pinned: <span th:text="${pinnedExerciseName}">Exercise</span></h2>
+                <div class="chart-container" style="max-width: 100%;">
+                    <canvas id="pinnedExerciseChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Exercises Section -->
+            <div style="margin-top: 3rem;">
+                <h2 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Exercises</h2>
+                
+                <div class="dashboard-content">
+                    <div class="chart-container" style="flex: 2;">
+                        <h3 style="margin-bottom: 1rem;">Your Exercises</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                            <a th:each="exercise : ${user.exercises}" th:href="@{/exercise/{name}(name=${exercise.name})}" class="btn btn-outline" th:text="${exercise.name}">Exercise</a>
+                            <span th:if="${#lists.isEmpty(user.exercises)}" style="color: var(--text-muted);">No exercises yet. Create one!</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-actions" style="flex: 1;">
+                        <div class="action-card">
+                            <h3 style="margin-bottom: 1rem;">Create New Exercise</h3>
+                            <form th:action="@{/exercise/add}" method="post" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <label for="exerciseName" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">Exercise Name</label>
+                                    <input type="text" id="exerciseName" name="name" required class="form-control" placeholder="e.g. Bench Press">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Create</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -169,6 +209,56 @@
                 }
             }
         });
+
+        /*<![CDATA[*/
+        const pinnedChartLabels = /*[[${pinnedChartLabels}]]*/ null;
+        const pinnedChartData = /*[[${pinnedChartData}]]*/ null;
+        /*]]>*/
+
+        if (pinnedChartLabels && pinnedChartLabels.length > 0) {
+            const pinnedCtx = document.getElementById('pinnedExerciseChart').getContext('2d');
+            new Chart(pinnedCtx, {
+                type: 'line',
+                data: {
+                    labels: pinnedChartLabels,
+                    datasets: [{
+                        label: 'Max Weight (kg)',
+                        data: pinnedChartData,
+                        borderColor: '#10b981', // green for distinction
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#10b981',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>

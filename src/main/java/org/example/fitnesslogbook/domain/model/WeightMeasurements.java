@@ -1,12 +1,15 @@
 package org.example.fitnesslogbook.domain.model;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class WeightMeasurements {
-    private final double weight;
-    private final LocalDate date;
+    private final UUID id;
+    private double weight;
+    private LocalDate date;
 
-    private WeightMeasurements(double weight, LocalDate date) {
+    private WeightMeasurements(UUID id, double weight, LocalDate date) {
+        this.id = id;
         this.weight = weight;
         this.date = date;
     }
@@ -15,7 +18,7 @@ public class WeightMeasurements {
         if (weight <= 0) {
             throw new IllegalArgumentException("Weight must be greater than zero");
         }
-        return new WeightMeasurements(weight, LocalDate.now());
+        return new WeightMeasurements(UUID.randomUUID(), weight, LocalDate.now());
     }
 
     public static WeightMeasurements of(double weight, LocalDate date) {
@@ -25,14 +28,32 @@ public class WeightMeasurements {
         if (date == null) {
             throw new IllegalArgumentException("Date cannot be null");
         }
-        return new WeightMeasurements(weight, date);
+        return new WeightMeasurements(UUID.randomUUID(), weight, date);
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public double getWeight() {
         return weight;
     }
 
+    public void setWeight(double weight) {
+        if (weight <= 0) {
+            throw new IllegalArgumentException("Weight must be greater than zero");
+        }
+        this.weight = weight;
+    }
+
     public LocalDate getDate() {
         return date;
+    }
+
+    public void setDate(LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("Date cannot be null");
+        }
+        this.date = date;
     }
 }
