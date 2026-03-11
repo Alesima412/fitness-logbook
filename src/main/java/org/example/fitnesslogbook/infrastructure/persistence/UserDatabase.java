@@ -1,7 +1,10 @@
 package org.example.fitnesslogbook.infrastructure.persistence;
 
 import org.example.fitnesslogbook.application.repository.UserRepository;
+import org.example.fitnesslogbook.domain.model.User;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public class UserDatabase implements UserRepository {
@@ -17,15 +20,13 @@ public class UserDatabase implements UserRepository {
     }
 
     @Override
-    public java.util.Optional<org.example.fitnesslogbook.domain.model.User> getAppUser() {
+    public Optional<User> getAppUser() {
         // Since this is a single-user logbook for now, we fetch the first user or handle accordingly
-        return userRepo.findAll().iterator().hasNext()
-                ? java.util.Optional.of(userRepo.findAll().iterator().next())
-                : java.util.Optional.empty();
+        return userRepo.findAll().stream().findFirst();
     }
 
     @Override
-    public void save(org.example.fitnesslogbook.domain.model.User user) {
+    public void save(User user) {
         userRepo.save(user);
     }
 
