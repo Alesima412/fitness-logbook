@@ -13,7 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
@@ -106,7 +108,7 @@ public class WeightController {
             return "redirect:/dashboard";
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             int count = 0;
             while ((line = reader.readLine()) != null) {
@@ -121,7 +123,7 @@ public class WeightController {
                         double weight = Double.parseDouble(parts[1].trim());
                         user.recordWeight(weight, date);
                         count++;
-                    } catch (Exception e) {
+                    } catch (NullPointerException | DateTimeParseException | NumberFormatException e) {
                         // Skip invalid lines
                     }
                 } else if (parts.length == 1) {
@@ -129,14 +131,14 @@ public class WeightController {
                         double weight = Double.parseDouble(parts[0].trim());
                         user.recordWeight(weight);
                         count++;
-                    } catch (Exception e) {
+                    } catch (NullPointerException | NumberFormatException e) {
                         // Skip invalid lines
                     }
                 }
             }
             userRepository.save(user);
             redirectAttributes.addFlashAttribute("success", "Successfully imported " + count + " measurements.");
-        } catch (Exception e) {
+        } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to process the CSV file.");
         }
 
