@@ -1,5 +1,8 @@
 package org.example.fitnesslogbook.domain.model;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,12 +11,15 @@ import java.util.Set;
 
 
 public class User {
+    @Id
     private final String name;
     private int age;
     private double height;
+    @MappedCollection(idColumn = "user_name", keyColumn = "weight_measurements_key")
     private final List<WeightMeasurements> measurements;
+    @MappedCollection(idColumn = "user_name")
     private final Set<Exercise> exercises;
-    private Exercise pinnedExercise;
+    private String pinnedExerciseName;
 
     private User(String name, int age, double height) {
         this.name = name;
@@ -21,7 +27,7 @@ public class User {
         this.height = height;
         this.measurements = new ArrayList<>();
         this.exercises = new HashSet<>();
-        this.pinnedExercise = null;
+        this.pinnedExerciseName = null;
     }
 
     public static User create(String name, int age, double height) {
@@ -118,20 +124,21 @@ public class User {
     }
 
     public Exercise getPinnedExercise() {
-        return pinnedExercise;
+        if (pinnedExerciseName == null) return null;
+        return getExercise(pinnedExerciseName);
     }
 
     public void pinExercise(String name) {
         Exercise ex = getExercise(name);
         if (ex != null) {
-            this.pinnedExercise = ex;
+            this.pinnedExerciseName = ex.getName();
         } else {
             throw new IllegalArgumentException("Exercise not found");
         }
     }
 
     public void unpinExercise() {
-        this.pinnedExercise = null;
+        this.pinnedExerciseName = null;
     }
 
     public double getHeight() {

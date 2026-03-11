@@ -1,7 +1,9 @@
 package org.example.fitnesslogbook.infrastructure.persistence;
 
 import org.example.fitnesslogbook.application.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class UserDatabase implements UserRepository {
     private final UserRepo userRepo;
 
